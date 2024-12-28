@@ -54,12 +54,27 @@ struct ContentView: View {
             MapPolyline(coordinates: [location1, location3])
                 .stroke(Color.blue, lineWidth: 2)
              
-                
+            if let route {
+                MapPolyline(route)
+                    .stroke(Color.red,lineWidth: 3)
+            }
+        }
+        .task {
+            await route = calculateDirections()
         }
     }
     
-    func calculateDirections() async {
+    func calculateDirections() async -> MKRoute? {
         
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: location1))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: location3))
+        request.transportType = .walking
+        
+        let response = try? await MKDirections(request: request).calculate()
+        route = response?.routes.first
+        
+        return route
     }
 }
 
